@@ -5,24 +5,41 @@ import (
 	"testing"
 )
 
-type A struct {
-	A int    `compare_key:"test"`
-	B string `compare_key:"test2"`
+type Person struct {
+	Age   int    `compare_key:"年龄"`
+	Name  string `compare_key:"姓名"`
+	Child Child  `compare_key:"孩子"`
 }
 
-type B struct {
-	A int    `compare_key:"test"`
-	B string `compare:"test2"`
+// the comparator can be used across different type
+type PersonB struct {
+	Age   int    `compare_key:"年龄"`
+	Name  string `compare_key:"姓名"`
+	Child Child  `compare_key:"孩子"`
+}
+
+type Child struct {
+	Age  int    `compare_key:"年龄"`
+	Name string `compare_key:"姓名"`
 }
 
 func TestComparator(t *testing.T) {
-	a := A{
-		A: 1,
-		B: "2",
+	a := Person{
+		Age:  10,
+		Name: "Wxl",
+		Child: Child{
+			Age:  5,
+			Name: "Libaisi",
+		},
 	}
-	b := B{
-		A: 2,
-		B: "2",
+	b := PersonB{
+		Age:  11,
+		Name: "Zzw",
+		Child: Child{
+			Age:  6,
+			Name: "Huangyou",
+		},
 	}
-	fmt.Println(structCompare(a, b))
+	result := compare(a, b)
+	fmt.Println(result)
 }

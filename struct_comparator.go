@@ -1,9 +1,14 @@
 package go_struct_comparator
 
-import "reflect"
+import (
+	"reflect"
+)
 
-func structCompare(a interface{}, b interface{}) map[string][]interface{} {
-	DefaultTag := "compare_key"
+const (
+	DefaultTag = "compare_key"
+)
+
+func structCompare(a interface{}, b interface{}, upper string) map[string][]interface{} {
 	typeA := reflect.TypeOf(a)
 	typeB := reflect.TypeOf(b)
 	valueA := reflect.ValueOf(a)
@@ -23,10 +28,39 @@ func structCompare(a interface{}, b interface{}) map[string][]interface{} {
 		if ok {
 			v1 := valueB.Field(i).Interface()
 			v2, ok2 := tagMap[tag.Get(DefaultTag)]
-			if ok2 && !reflect.DeepEqual(v1, v2) {
-				result[tag.Get(DefaultTag)] = []interface{}{v1, v2}
+			if typeA.Field(i).Type.Kind() == reflect.Struct {
+				mergeMap(result, structCompare(v1, v2, generateKey(upper, tag.Get(DefaultTag))))
+			} else if typeA.Field(i).Type.Kind() == reflect.Array || typeA.Field(i).Type.Kind() == reflect.Slice {
+				mergeMap(result, arrayCompare(v1, v2, generateKey(upper, tag.Get(DefaultTag))))
+			} else if ok2 && !reflect.DeepEqual(v1, v2) {
+				result[generateKey(upper, tag.Get(DefaultTag))] = []interface{}{v1, v2}
 			}
 		}
 	}
 	return result
+}
+
+// todo
+func arrayCompare(a, b interface{}, upper string) map[string][]interface{} {
+	result := make(map[string][]interface{})
+	return result
+}
+
+func mergeMap(a, b map[string][]interface{}) map[string][]interface{} {
+	for k, v := range b {
+		a[k] = v
+	}
+	return a
+}
+
+func compare(a, b interface{}) map[string][]interface{} {
+	return structCompare(a, b, "")
+}
+
+func generateKey(upper, key string) string {
+	if upper == "" {
+		return key
+	} else {
+		return upper + "-" + key
+	}
 }
