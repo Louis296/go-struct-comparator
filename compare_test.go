@@ -40,6 +40,6 @@ func TestComparator(t *testing.T) {
 			Name: "Huangyou",
 		},
 	}
-	result := compare(a, b)
+	result := Compare(a, b)
 	fmt.Println(result)
 }

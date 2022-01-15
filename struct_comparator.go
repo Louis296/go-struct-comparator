@@ -53,7 +53,7 @@ func mergeMap(a, b map[string][]interface{}) map[string][]interface{} {
 	return a
 }
 
-func compare(a, b interface{}) map[string][]interface{} {
+func Compare(a, b interface{}) map[string][]interface{} {
 	return structCompare(a, b, "")
 }
 
