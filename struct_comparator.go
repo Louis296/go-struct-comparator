@@ -2,6 +2,7 @@ package go_struct_comparator
 
 import (
 	"reflect"
+	"strconv"
 )
 
 const (
@@ -28,21 +29,60 @@ func structCompare(a interface{}, b interface{}, upper string) map[string][]inte
 		if ok {
 			v1 := valueB.Field(i).Interface()
 			v2, ok2 := tagMap[tag.Get(DefaultTag)]
-			if typeA.Field(i).Type.Kind() == reflect.Struct {
-				mergeMap(result, structCompare(v1, v2, generateKey(upper, tag.Get(DefaultTag))))
-			} else if typeA.Field(i).Type.Kind() == reflect.Array || typeA.Field(i).Type.Kind() == reflect.Slice {
-				mergeMap(result, arrayCompare(v1, v2, generateKey(upper, tag.Get(DefaultTag))))
-			} else if ok2 && !reflect.DeepEqual(v1, v2) {
-				result[generateKey(upper, tag.Get(DefaultTag))] = []interface{}{v1, v2}
+			if ok2 {
+				if typeA.Field(i).Type.Kind() == reflect.Struct {
+					mergeMap(result, structCompare(v1, v2, generateKey(upper, tag.Get(DefaultTag))))
+				} else if typeA.Field(i).Type.Kind() == reflect.Array || typeA.Field(i).Type.Kind() == reflect.Slice {
+					mergeMap(result, arrayCompare(v1, v2, generateKey(upper, tag.Get(DefaultTag))))
+				} else if !reflect.DeepEqual(v1, v2) {
+					result[generateKey(upper, tag.Get(DefaultTag))] = []interface{}{v1, v2}
+				}
 			}
 		}
 	}
 	return result
 }
 
-// todo
 func arrayCompare(a, b interface{}, upper string) map[string][]interface{} {
 	result := make(map[string][]interface{})
+	arrayA := toInterfaceArray(a)
+	arrayB := toInterfaceArray(b)
+	if !(len(arrayA) == 0 && len(arrayB) == 0) {
+		var item interface{}
+		if len(arrayA) == 0 {
+			item = arrayB[0]
+		} else {
+			item = arrayA[0]
+		}
+		if reflect.TypeOf(item).Kind() == reflect.Struct {
+			for i := 0; i < min(len(arrayA), len(arrayB)); i++ {
+				mergeMap(result, structCompare(arrayA[i], arrayB[i], generateKey(upper, strconv.Itoa(i))))
+			}
+		} else if reflect.TypeOf(item).Kind() == reflect.Array || reflect.TypeOf(item).Kind() == reflect.Slice {
+			for i := 0; i < min(len(arrayA), len(arrayB)); i++ {
+				mergeMap(result, arrayCompare(arrayA[i], arrayB[i], generateKey(upper, strconv.Itoa(i))))
+			}
+		} else if !reflect.DeepEqual(a, b) {
+			result[upper] = []interface{}{a, b}
+		}
+	}
+	return result
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	} else {
+		return b
+	}
+}
+
+func toInterfaceArray(a interface{}) []interface{} {
+	var result []interface{}
+	v := reflect.ValueOf(a)
+	for i := 0; i < v.Len(); i++ {
+		result = append(result, v.Index(i).Interface())
+	}
 	return result
 }
 
