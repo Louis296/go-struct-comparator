@@ -1,8 +1,8 @@
 # go-struct-comparator
-### go语言结构体比较器
 
----
+[![GoDoc](https://img.shields.io/badge/api-reference-blue.svg?style=flat-square)](https://pkg.go.dev/github.com/louis296/go-struct-comparator)  
 
+go语言结构体比较器
 ## 使用方法  
 ### 安装获取
 ```sh
